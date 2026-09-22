@@ -1,0 +1,2 @@
+"""Attendance monitor backend package."""
+

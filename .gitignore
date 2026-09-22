@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+data/*.db
+logs/*.log
+artifacts/*
+!artifacts/.gitkeep
+browser-profile/*
+!browser-profile/.gitkeep
+frontend/node_modules/
+frontend/dist/
+
