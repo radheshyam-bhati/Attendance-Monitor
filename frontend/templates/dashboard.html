@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWIOI Attendance Monitor</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>PWIOI Attendance Monitor</h1>
+            <div class="header-meta">
+                <span id="current-date"></span>
+                <span id="scheduler-status" class="status-badge status-idle">Scheduler: Idle</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- Today's Attendance Card -->
+            <section class="card today-card">
+                <div class="card-header">
+                    <h2>Today's Attendance</h2>
+                    <div class="card-actions">
+                        <button id="check-now-btn" class="btn btn-primary" disabled>
+                            <span class="btn-text">Check Now</span>
+                            <span class="btn-loader" hidden></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="today-attendance">
+                    <div class="loading-state">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Summary Stats -->
+            <section class="stats-grid" id="stats-grid" hidden>
+                <div class="stat-card stat-present">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-present">0</span>
+                        <span class="stat-label">Present</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-absent">
+                    <div class="stat-icon">🔴</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-absent">0</span>
+                        <span class="stat-label">Absent</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-not-marked">
+                    <div class="stat-icon">🟡</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-not-marked">0</span>
+                        <span class="stat-label">Not Marked</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-total">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-total">0</span>
+                        <span class="stat-label">Total Classes</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gmail Status -->
+            <section class="card gmail-card">
+                <div class="card-header">
+                    <h2>Gmail Reporting</h2>
+                </div>
+                <div class="card-body">
+                    <div id="gmail-status">
+                        <div class="loading-state">Checking Gmail authorization...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History -->
+            <section class="card history-card">
+                <div class="card-header">
+                    <h2>Check History</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Attendance Date</th>
+                                    <th>Batch</th>
+                                    <th>Present</th>
+                                    <th>Absent</th>
+                                    <th>Classes</th>
+                                    <th>Email</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-body">
+                                <tr><td colspan="8" class="loading-cell">Loading history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Data source: PWIOI Student Attendance Portal | Automated monitoring at {{ check_time }} {{ timezone }}</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
