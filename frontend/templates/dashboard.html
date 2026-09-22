@@ -17,6 +17,48 @@
         </header>
 
         <main>
+            <!-- Schedule Settings Card -->
+            <section class="card schedule-card">
+                <div class="card-header">
+                    <h2>Schedule Settings</h2>
+                </div>
+                <div class="card-body">
+                    <form id="schedule-form" class="schedule-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="check-time">Check Time</label>
+                                <input type="time" id="check-time" name="check_time" required>
+                                <small class="form-hint">24-hour format (e.g., 16:30 for 4:30 PM)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone">Timezone</label>
+                                <select id="timezone" name="timezone" required>
+                                    <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                                    <option value="UTC">UTC</option>
+                                    <option value="America/New_York">America/New_York (EST/EDT)</option>
+                                    <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+                                    <option value="Europe/London">Europe/London (GMT/BST)</option>
+                                    <option value="Europe/Berlin">Europe/Berlin (CET/CEST)</option>
+                                    <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                                    <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                                    <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="save-schedule-btn">
+                                <span class="btn-text">Save Schedule</span>
+                                <span class="btn-loader" hidden></span>
+                            </button>
+                            <span id="schedule-message" class="form-message"></span>
+                        </div>
+                        <div class="schedule-info">
+                            <span id="next-check">Next check: <strong>Loading...</strong></span>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
             <!-- Today's Attendance Card -->
             <section class="card today-card">
                 <div class="card-header">
@@ -107,7 +149,7 @@
         </main>
 
         <footer class="footer">
-            <p>Data source: PWIOI Student Attendance Portal | Automated monitoring at {{ check_time }} {{ timezone }}</p>
+            <p>Data source: PWIOI Student Attendance Portal | Automated monitoring at <span id="footer-schedule">Loading...</span></p>
         </footer>
     </div>
 

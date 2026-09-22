@@ -377,6 +377,85 @@ tr:hover td {
     animation: spin 0.8s linear infinite;
 }
 
+/* Schedule Form */
+.schedule-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background: var(--color-card);
+    color: var(--color-text);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.3);
+}
+
+.form-hint {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.form-message {
+    font-size: 13px;
+    min-height: 20px;
+}
+
+.form-message.success {
+    color: var(--color-success);
+}
+
+.form-message.error {
+    color: var(--color-danger);
+}
+
+.schedule-info {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+}
+
+.schedule-info strong {
+    color: var(--color-text);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
     .container {
@@ -391,6 +470,10 @@ tr:hover td {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
     }
 
     .attendance-item {
