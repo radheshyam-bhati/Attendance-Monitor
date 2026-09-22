@@ -19,4 +19,3 @@ def test_database_initialization_creates_sqlite_file(tmp_path) -> None:
     initialize_database(f"sqlite:///{database_path}")
 
     assert database_path.exists()
-

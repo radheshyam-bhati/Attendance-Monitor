@@ -12,6 +12,7 @@ class Dashboard {
     async init() {
         this.setCurrentDate();
         await this.loadAllData();
+        this.bindEvents();
         this.startAutoRefresh();
     }
 
@@ -26,20 +27,121 @@ class Dashboard {
         setInterval(() => this.loadAllData(), 30000);
     }
 
+    bindEvents() {
+        // Check now button
+        document.getElementById('check-now-btn').addEventListener('click', () => {
+            this.triggerCheckNow();
+        });
+
+        // Schedule form
+        const scheduleForm = document.getElementById('schedule-form');
+        if (scheduleForm) {
+            scheduleForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveScheduleSettings();
+            });
+        }
+    }
+
     async loadAllData() {
         await Promise.all([
             this.loadLatestCheck(),
             this.loadHistory(),
             this.loadGmailStatus(),
+            this.loadScheduleSettings(),
         ]);
     }
 
-    async fetchJson(url) {
-        const response = await fetch(url);
+    async fetchJson(url, options = {}) {
+        const response = await fetch(url, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options,
+        });
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const error = await response.json().catch(() => ({ detail: response.statusText }));
+            throw new Error(error.detail || `HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
+    }
+
+    // --- Schedule Settings ---
+
+    async loadScheduleSettings() {
+        try {
+            const data = await this.fetchJson('/api/schedule');
+            this.checkTime = data.check_time;
+            this.timezone = data.timezone;
+            this.renderScheduleSettings(data);
+        } catch (error) {
+            console.error('Failed to load schedule settings:', error);
+        }
+    }
+
+    renderScheduleSettings(data) {
+        // Update form fields
+        document.getElementById('check-time').value = data.check_time;
+        document.getElementById('timezone').value = data.timezone;
+
+        // Update next check time
+        const nextCheckEl = document.getElementById('next-check');
+        const footerSchedule = document.getElementById('footer-schedule');
+        const nextRun = data.next_scheduled_check;
+
+        if (nextRun) {
+            const nextDate = new Date(nextRun);
+            const formatted = nextDate.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short',
+            });
+            const text = `Next check: <strong>${formatted}</strong>`;
+            if (nextCheckEl) nextCheckEl.innerHTML = text;
+            if (footerSchedule) footerSchedule.innerHTML = `${data.check_time} ${data.timezone} (Next: ${formatted})`;
+        } else {
+            const text = `Next check: <strong>Not scheduled</strong>`;
+            if (nextCheckEl) nextCheckEl.innerHTML = text;
+            if (footerSchedule) footerSchedule.innerHTML = `${data.check_time} ${data.timezone}`;
+        }
+    }
+
+    async saveScheduleSettings() {
+        const checkTime = document.getElementById('check-time').value;
+        const timezone = document.getElementById('timezone').value;
+        const btn = document.getElementById('save-schedule-btn');
+        const btnText = btn.querySelector('.btn-text');
+        const btnLoader = btn.querySelector('.btn-loader');
+        const messageEl = document.getElementById('schedule-message');
+
+        btn.disabled = true;
+        btnText.textContent = 'Saving...';
+        btnLoader.hidden = false;
+        messageEl.textContent = '';
+        messageEl.className = 'form-message';
+
+        try {
+            const data = await this.fetchJson('/api/schedule', {
+                method: 'PUT',
+                body: JSON.stringify({ check_time: checkTime, timezone }),
+            });
+
+            this.checkTime = data.check_time;
+            this.timezone = data.timezone;
+            this.renderScheduleSettings(data);
+
+            messageEl.textContent = 'Schedule saved successfully!';
+            messageEl.className = 'form-message success';
+        } catch (error) {
+            console.error('Failed to save schedule:', error);
+            messageEl.textContent = `Failed to save: ${error.message}`;
+            messageEl.className = 'form-message error';
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = 'Save Schedule';
+            btnLoader.hidden = true;
+        }
     }
 
     // --- Latest Check ---
@@ -394,9 +496,4 @@ class Dashboard {
 let dashboard;
 document.addEventListener('DOMContentLoaded', () => {
     dashboard = new Dashboard();
-
-    // Bind check now button
-    document.getElementById('check-now-btn').addEventListener('click', () => {
-        dashboard.triggerCheckNow();
-    });
 });
