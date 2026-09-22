@@ -11,3 +11,12 @@ browser-profile/*
 frontend/node_modules/
 frontend/dist/
 
+# OS
+.DS_Store
+
+# IDE
+.idea/
+
+# Planning / scratch notes
+docs/
+
