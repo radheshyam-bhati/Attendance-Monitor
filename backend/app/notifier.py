@@ -22,9 +22,10 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from .config import Settings
-from .models import TodayAttendance
+from .models import AttendanceStatus, TodayAttendance
 
 logger = logging.getLogger(__name__)
+
 
 # Gmail API scope - only send permission needed
 GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
@@ -104,7 +105,7 @@ class GmailNotifier:
 
         try:
             creds = Credentials.from_authorized_user_file(str(token_path), GMAIL_SCOPES)
-            if creds.expired and creds.refresh_token:
+            if not creds.valid and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
                 # Save refreshed token
                 token_path.write_text(creds.to_json(), encoding="utf-8")
@@ -126,11 +127,17 @@ class GmailNotifier:
 
     def _create_message(self, to: str, subject: str, body: str) -> dict:
         """Create a MIME email message."""
-        message = MIMEText(body, "plain", "utf-8")
-        message["to"] = to
-        message["subject"] = subject
+        try:
+            body.encode("ascii")
+            message = MIMEText(body, "plain")
+        except UnicodeEncodeError:
+            message = MIMEText(body, "plain", "utf-8")
+        message["To"] = to
+        message["Subject"] = subject
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
         return {"raw": raw_message}
+
+
 
     async def send_attendance_report(self, attendance: TodayAttendance, recipient_email: str) -> tuple[bool, Optional[str]]:
         """Send the attendance report via Gmail API.

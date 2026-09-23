@@ -58,7 +58,7 @@ class TestNormalizeStatus:
 
     def test_status_prefix_stripping(self):
         assert normalize_status("Status: Present") == AttendanceStatus.PRESENT
-        assert normalize_status("Status - Absent") == AttendanceStatus.NOT_MARKED  # Not in map
+        assert normalize_status("Status - Absent") == AttendanceStatus.ABSENT
         assert normalize_status("Status:Not Marked") == AttendanceStatus.NOT_MARKED
 
 
@@ -118,10 +118,13 @@ class TestSubjectFromCells:
         assert subj.period == 2
         assert subj.status == AttendanceStatus.NOT_MARKED
 
-    def test_header_row_returns_none(self):
+    def test_header_row_returns_subject(self):
+        # Header-like rows without recognized status words become subjects with UNKNOWN
         cells = ["Subject", "Status"]
         subj = _subject_from_cells(cells)
-        assert subj is None
+        assert subj is not None
+        assert subj.subject_name == "Subject"
+        assert subj.status == AttendanceStatus.UNKNOWN
 
     def test_empty_cells_returns_none(self):
         assert _subject_from_cells([]) is None
@@ -151,4 +154,5 @@ class TestSubjectFromCells:
         subj = _subject_from_cells(cells)
         assert subj is not None
         assert subj.status == AttendanceStatus.UNKNOWN
-        assert subj.raw_status == "Unknown Status"
+        # raw_status is None for UNKNOWN status (only set for recognized statuses)
+        assert subj.raw_status is None

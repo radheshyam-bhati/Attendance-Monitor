@@ -20,7 +20,7 @@ from playwright.async_api import Page
 from .attendance import AttendanceParseError, parse_attendance
 from .browser import BrowserManager
 from .config import Settings
-from .database import create_session_factory
+from .database import create_session_factory, initialize_database
 from .models import (
     AttendanceStatus,
     CheckResult,
@@ -61,8 +61,8 @@ class AttendanceWorkflow:
         logger.info("Starting attendance check workflow (manual=%s)", manual)
 
         # Initialize database
-        from .database import initialize_database
         initialize_database(self._settings.database_url)
+
 
         # Start browser
         await self._browser.start()

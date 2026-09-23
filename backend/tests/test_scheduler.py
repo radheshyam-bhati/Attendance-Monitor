@@ -4,22 +4,24 @@ import pytest
 from datetime import time
 from unittest.mock import patch, MagicMock, AsyncMock, call
 
-from app.scheduler import AttendanceScheduler, create_scheduler
+from app.scheduler import AttendanceScheduler, create_scheduler, lifespan_scheduler
 from app.config import Settings
 
 
+@pytest.fixture
+def mock_settings():
+    settings = MagicMock(spec=Settings)
+    settings.check_time = "16:30"
+    settings.timezone = "Asia/Kolkata"
+    return settings
+
+
+@pytest.fixture
+def mock_check_func():
+    return AsyncMock()
+
+
 class TestAttendanceScheduler:
-    @pytest.fixture
-    def mock_settings(self):
-        settings = MagicMock(spec=Settings)
-        settings.check_time = "16:30"
-        settings.timezone = "Asia/Kolkata"
-        return settings
-
-    @pytest.fixture
-    def mock_check_func(self):
-        return AsyncMock()
-
     def test_parse_check_time_valid(self, mock_settings):
         scheduler = AttendanceScheduler(mock_settings, AsyncMock())
         # Test via internal method
@@ -146,13 +148,12 @@ class TestAttendanceScheduler:
 
 
 class TestCreateScheduler:
-    def test_factory_function(self, mock_settings):
-        check_func = AsyncMock()
-        scheduler = create_scheduler(mock_settings, check_func)
+    def test_factory_function(self, mock_settings, mock_check_func):
+        scheduler = create_scheduler(mock_settings, mock_check_func)
 
         assert isinstance(scheduler, AttendanceScheduler)
         assert scheduler._settings == mock_settings
-        assert scheduler._check_func == check_func
+        assert scheduler._check_func == mock_check_func
 
 
 class TestLifespanScheduler:
@@ -163,8 +164,6 @@ class TestLifespanScheduler:
             mock_scheduler.start = MagicMock()
             mock_scheduler.shutdown = MagicMock()
             mock_create.return_value = mock_scheduler
-
-            from app.scheduler import lifespan_scheduler
 
             async with lifespan_scheduler(mock_settings, mock_check_func) as scheduler:
                 assert scheduler == mock_scheduler

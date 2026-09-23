@@ -5,8 +5,9 @@ from datetime import date, datetime
 from unittest.mock import patch, MagicMock, AsyncMock, PropertyMock
 
 from app.workflow import AttendanceWorkflow, run_attendance_check, AttendanceCheckError
-from app.models import TodayAttendance, SubjectAttendance, AttendanceStatus, CheckResult
+from app.models import TodayAttendance, SubjectAttendance, AttendanceStatus, CheckResult, SubjectAttendanceRecord
 from app.config import Settings
+
 
 
 class TestAttendanceWorkflow:
@@ -80,6 +81,10 @@ class TestAttendanceWorkflow:
                 present_count=2,
                 absent_count=0,
                 email_status="pending",
+                subjects=[
+                    SubjectAttendanceRecord(subject_name="Mathematics", status="PRESENT", period=1),
+                    SubjectAttendanceRecord(subject_name="Physics", status="PRESENT", period=2),
+                ],
             )
 
             with patch("app.workflow.create_session_factory", return_value=mock_session_factory):
@@ -96,9 +101,14 @@ class TestAttendanceWorkflow:
     ):
         mock_portal.is_login_page.return_value = True
 
+        mock_session_factory = MagicMock()
+        mock_session = MagicMock()
+        mock_session_factory.return_value = mock_session
+
         with patch("app.workflow.BrowserManager", return_value=mock_browser), \
              patch("app.workflow.PWIOIPortal", return_value=mock_portal), \
              patch("app.workflow.GmailNotifier", return_value=mock_notifier), \
+             patch("app.workflow.create_session_factory", return_value=mock_session_factory), \
              patch("app.workflow.initialize_database"):
 
             workflow = AttendanceWorkflow(mock_settings)
@@ -112,9 +122,14 @@ class TestAttendanceWorkflow:
         mock_portal.is_login_page.return_value = False
         mock_portal.is_attendance_page.return_value = False
 
+        mock_session_factory = MagicMock()
+        mock_session = MagicMock()
+        mock_session_factory.return_value = mock_session
+
         with patch("app.workflow.BrowserManager", return_value=mock_browser), \
              patch("app.workflow.PWIOIPortal", return_value=mock_portal), \
              patch("app.workflow.GmailNotifier", return_value=mock_notifier), \
+             patch("app.workflow.create_session_factory", return_value=mock_session_factory), \
              patch("app.workflow.initialize_database"):
 
             workflow = AttendanceWorkflow(mock_settings)
@@ -127,9 +142,14 @@ class TestAttendanceWorkflow:
     ):
         from app.attendance import AttendanceParseError
 
+        mock_session_factory = MagicMock()
+        mock_session = MagicMock()
+        mock_session_factory.return_value = mock_session
+
         with patch("app.workflow.BrowserManager", return_value=mock_browser), \
              patch("app.workflow.PWIOIPortal", return_value=mock_portal), \
              patch("app.workflow.GmailNotifier", return_value=mock_notifier), \
+             patch("app.workflow.create_session_factory", return_value=mock_session_factory), \
              patch("app.workflow.parse_attendance", new_callable=AsyncMock) as mock_parse, \
              patch("app.workflow.initialize_database"):
 
@@ -138,6 +158,7 @@ class TestAttendanceWorkflow:
             workflow = AttendanceWorkflow(mock_settings)
             with pytest.raises(AttendanceCheckError, match="Failed to parse attendance"):
                 await workflow.run_check(manual=True)
+
 
     @pytest.mark.asyncio
     async def test_run_check_with_gmail_authorized(

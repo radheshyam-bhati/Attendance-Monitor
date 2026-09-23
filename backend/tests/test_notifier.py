@@ -156,7 +156,7 @@ class TestGmailNotifier:
     @pytest.mark.asyncio
     async def test_send_report_success(self, notifier, sample_attendance):
         mock_service = MagicMock()
-        mock_service.users().messages().send().execute.return_value = {"id": "msg123"}
+        mock_service.users().messages().send.return_value.execute.return_value = {"id": "msg123"}
 
         with patch.object(notifier, "is_authorized", return_value=True), \
              patch.object(notifier, "_get_service", return_value=mock_service):
@@ -172,7 +172,8 @@ class TestGmailNotifier:
         mock_service = MagicMock()
         mock_resp = MagicMock()
         mock_resp.status = 403
-        mock_service.users().messages().send().execute.side_effect = HttpError(mock_resp, b"Forbidden")
+        mock_service.users().messages().send.return_value.execute.side_effect = HttpError(mock_resp, b"Forbidden")
+
 
         with patch.object(notifier, "is_authorized", return_value=True), \
              patch.object(notifier, "_get_service", return_value=mock_service):
